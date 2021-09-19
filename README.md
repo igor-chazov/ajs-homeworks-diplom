@@ -2,6 +2,8 @@
 
 ###### tags: `netology` `advanced js`
 
+[![Build status](https://ci.appveyor.com/api/projects/status/gfjul7duq6gmpsn7?svg=true)](https://ci.appveyor.com/project/igor-chazov/ajs-homeworks-diplom)
+
 ###### demo: [[Github Pages](https://igor-chazov.github.io/ajs-homeworks-diplom)]
 
 ## Концепция игры
