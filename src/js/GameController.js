@@ -1,6 +1,5 @@
 /* eslint-disable prefer-promise-reject-errors */
 /* eslint-disable no-param-reassign */
-/* eslint-disable max-len */
 import themes from './themes';
 import cursors from './cursors';
 import GamePlay from './GamePlay';
@@ -108,9 +107,10 @@ export default class GameController {
     if (!this.positionsToDraw.length) {
       const playerTeam = generateTeam([Swordsman, Bowman], level, 2);
       const enemyTeam = generateTeam(this.sides.enemy.characters, level, 2);
-      this.positionsToDraw = [
-        playerTeam.map((item) => new PositionedCharacter(item, this.sides.player.name, getPosition(player))),
-        enemyTeam.map((item) => new PositionedCharacter(item, this.sides.enemy.name, getPosition(enemy))),
+      this.positionsToDraw = [playerTeam
+        .map((item) => new PositionedCharacter(item, this.sides.player.name, getPosition(player))),
+      enemyTeam
+        .map((item) => new PositionedCharacter(item, this.sides.enemy.name, getPosition(enemy))),
       ].flat();
     } else {
       // Возвращаем оставшихся на исходные позиции
@@ -129,9 +129,13 @@ export default class GameController {
         playerTeam = generateTeam(this.sides.player.characters, level - 1, 2);
       }
 
-      const enemyTeam = generateTeam(this.sides.enemy.characters, level, playerTeam.length + survivorsPlayer);
-      this.positionsToDraw.push(playerTeam.map((item) => new PositionedCharacter(item, this.sides.player.name, getPosition(playerFiltered))));
-      this.positionsToDraw.push(enemyTeam.map((item) => new PositionedCharacter(item, this.sides.enemy.name, getPosition(enemy))));
+      const enemyTeam = generateTeam(this.sides.enemy.characters,
+        level, playerTeam.length + survivorsPlayer);
+      this.positionsToDraw.push(playerTeam
+        .map((item) => new PositionedCharacter(item, this.sides.player.name,
+          getPosition(playerFiltered))));
+      this.positionsToDraw.push(enemyTeam
+        .map((item) => new PositionedCharacter(item, this.sides.enemy.name, getPosition(enemy))));
       this.positionsToDraw = this.positionsToDraw.flat();
     }
     this.gamePlay.redrawPositions(this.positionsToDraw);
@@ -193,7 +197,8 @@ export default class GameController {
         * (1.8 - (hero.character.health === 1 ? 80 : hero.character.health) / 100)));
       hero.character.defence = Math.ceil(Math.max(hero.character.defence, hero.character.defence
         * (1.8 - (hero.character.health === 1 ? 80 : hero.character.health) / 100)));
-      hero.character.health = Math.ceil(hero.character.health + 80 > 100 ? 100 : hero.character.health + 80);
+      hero.character.health = Math.ceil(hero.character.health + 80 > 100
+        ? 100 : hero.character.health + 80);
     });
     switch (this.level) {
       case 2:
@@ -387,14 +392,20 @@ export default class GameController {
     this.gamePlay.deselectAll();
     const enemies = this.positionsToDraw.filter((hero) => hero.side === this.sides.enemy.name);
     // Атаковать будет самый сильный персонаж
-    const enemyAttacker = enemies.find((item) => item.character.attack === Math.max.apply(null, enemies.map((hero) => hero.character.attack)));
+    const enemyAttacker = enemies
+      .find((item) => item.character.attack === Math.max.apply(null, enemies
+        .map((hero) => hero.character.attack)));
 
     return new Promise((resolve, reject) => {
       const damageToAttacker = Math.round(
-        Math.max(enemyAttacker.character.attack - this.selected.character.defence, enemyAttacker.character.attack * 0.1),
+        Math.max(enemyAttacker.character.attack - this.selected.character.defence,
+          enemyAttacker.character.attack * 0.1),
       );
       // Если цель в пределах атаки - к бою!
-      if (this.getAreaAttack(enemyAttacker, enemyAttacker.character.distanceAttack).find((item) => item === this.selected.position)) {
+      if (
+        this.getAreaAttack(enemyAttacker, enemyAttacker.character.distanceAttack)
+          .find((item) => item === this.selected.position)
+      ) {
         this.selected.character.health -= damageToAttacker;
         resolve(damageToAttacker);
         //  Иначе - движемся к нему
@@ -442,19 +453,24 @@ export default class GameController {
         .then(
           (damageToAttacker) => this.gamePlay.showDamage(this.selected.position, damageToAttacker),
           (reject) => {
-            reject.enemyAttacker.position = this.moveDefending(reject.enemyAttacker, this.selected, reject.enemies);
+            reject.enemyAttacker.position = this.moveDefending(reject.enemyAttacker,
+              this.selected, reject.enemies);
           },
         )
         .then(actionAfterAttack.bind(this));
       // Щёлкнули по союзнику
-    } else if ((this.currentStatus === this.statuses.allied) && (this.selected !== currentPosition)) {
+    } else if ((this.currentStatus === this.statuses.allied)
+      && (this.selected !== currentPosition)) {
       this.gamePlay.deselectCell(this.selected.position);
       this.selected = currentPosition;
       this.gamePlay.selectCell(index);
       // Щёлкнули по врагу
     } else if (this.currentStatus === this.statuses.enemy) {
       const opponent = this.positionsToDraw.find((hero) => hero.position === index);
-      const damageToOpponent = Math.ceil(Math.max(this.selected.character.attack - opponent.character.defence, this.selected.character.attack * 0.1));
+      const damageToOpponent = Math.ceil(
+        Math.max(this.selected.character.attack - opponent.character.defence,
+          this.selected.character.attack * 0.1),
+      );
       opponent.character.health -= damageToOpponent;
       // Если убили - удаляем с поля
       if (opponent.character.health <= 0) {
@@ -464,7 +480,8 @@ export default class GameController {
         // Убил противника: либо победа, либо он отвечает
         if (!this.positionsToDraw.find((item) => item.side === this.sides.enemy.name)) {
           this.selected = null;
-          this.score = this.positionsToDraw.reduce((accumulator, hero) => accumulator + hero.character.health, this.score);
+          this.score = this.positionsToDraw
+            .reduce((accumulator, hero) => accumulator + hero.character.health, this.score);
           if (this.level === 4) {
             GamePlay.showMessage(`Победа! Ваш счет равен ${this.score}.`);
             this.clear();
@@ -476,9 +493,11 @@ export default class GameController {
         } else {
           this.moveEnemyAttack()
             .then(
-              (damageToAttacker) => this.gamePlay.showDamage(this.selected.position, damageToAttacker),
+              (damageToAttacker) => this.gamePlay
+                .showDamage(this.selected.position, damageToAttacker),
               (reject) => {
-                reject.enemyAttacker.position = this.moveDefending(reject.enemyAttacker, this.selected, reject.enemies);
+                reject.enemyAttacker.position = this.moveDefending(reject.enemyAttacker,
+                  this.selected, reject.enemies);
               },
             )
             .then(actionAfterAttack.bind(this));
@@ -489,9 +508,11 @@ export default class GameController {
           // Ответ компьютера
           .then(() => this.moveEnemyAttack())
           .then(
-            (damageToAttacker) => this.gamePlay.showDamage(this.selected.position, damageToAttacker),
+            (damageToAttacker) => this.gamePlay
+              .showDamage(this.selected.position, damageToAttacker),
             (reject) => {
-              reject.enemyAttacker.position = this.moveDefending(reject.enemyAttacker, this.selected, reject.enemies);
+              reject.enemyAttacker.position = this.moveDefending(reject.enemyAttacker,
+                this.selected, reject.enemies);
             },
           )
           .then(actionAfterAttack.bind(this));
@@ -531,13 +552,16 @@ export default class GameController {
         this.gamePlay.setCursor(cursors.pointer);
         this.currentStatus = this.statuses.freespace;
         //  Клетка доступна для атаки
-      } else if (this.attacks.includes(index) && this.positionsToDraw.filter((item) => item.side === this.sides.enemy.name)
-        .find((item) => item.position === index)) {
+      } else if (this.attacks.includes(index)
+        && this.positionsToDraw
+          .filter((item) => item.side === this.sides.enemy.name)
+          .find((item) => item.position === index)) {
         this.gamePlay.selectCell(index, 'red');
         this.gamePlay.setCursor(cursors.crosshair);
         this.currentStatus = this.statuses.enemy;
         //  Клетка занята союзником
-      } else if (this.positionsToDraw.filter((item) => item.side === this.sides.player.name)
+      } else if (this.positionsToDraw
+        .filter((item) => item.side === this.sides.player.name)
         .find((item) => (item.position === index) && (item.position !== this.selected.position))) {
         this.gamePlay.setCursor(cursors.pointer);
         this.currentStatus = this.statuses.allied;
